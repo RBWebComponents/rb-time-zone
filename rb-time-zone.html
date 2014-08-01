@@ -1,0 +1,271 @@
+<!--
+Copyright (c) 2014, RBWebComponents Authors. All rights reserved.
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 3.0 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library.
+-->
+
+<!--
+Provides a façade for the Google Time Zone API.
+
+Required Parameters
+<ul>
+  <li><code>latitude</code>: latitude to lookup</li>
+  <li><code>longitude</code>: longitude to lookup</li>
+  <li><code>timestamp</code> specifies the desired time as seconds since
+      midnight, January 1, 1970 UTC. The Time Zone API uses the
+      <code>timestamp</code> to determine whether or not Daylight Savings should
+      be applied. Times before 1970 can be expressed as negative values.</li>
+</ul>
+
+Maps API for Business users must include valid <code>client</code> and
+<code>signature</code> parameters with their requests. Please refer to Maps API
+for Business Web Services for more information.
+
+Optional Parameters
+<ul>
+  <li><code>apiKey</code>: Your application's
+    <a href="https://developers.google.com/console/help/#UsingKeys">API key</a>.
+    This key identifies your application for purposes of quota management. Learn
+    how to <a href="https://developers.google.com/maps/documentation/timezone/#api_key">get a key</a>
+    from the <a href="https://code.google.com/apis/console/?noredirect">APIs Console</a>.
+  </li>
+  <li><code>language</code>: The language in which to return results.
+    See the <a href="https://developers.google.com/maps/faq#languagesupport">
+    list of supported domain languages</a>. Note that we often update supported
+    languages so this list may not be exhaustive. Defaults to <code>en</code>.</li>
+  <li><code>output</code>: The output format can be one of the following:
+    <ul>
+      <li><code>json</code>: This is the default format, returns results in
+      JavaScript Object Notation (JSON).</li>
+      <li><code>xml</code>returns results in XML, wrapped within a
+      <code><TimeZoneResponse></code> node.</li>
+    </ul>
+  </li>
+  <li><code>auto</code>: If true, automatically performs the request on another
+    parameter change
+  </li>
+</ul>
+
+<b>Example</b> - full parameters
+
+    <rb-time-zone
+      auto
+      latitude="37.77493"
+      longitude="-122.41942"
+      timestamp="1387929600"
+      apiKey="489qwd9wq4d98qw4d94"
+      language="en"
+      output="json"
+      clientId="YOUR_CLIENT_ID"
+      signature="YOUR_URL_SIGNATURE">
+    </rb-time-zone>
+
+    <script>
+      var mapsAPI = document.querySelector('google-maps-api');
+      mapsAPI.addEventListener('api-load', function(e) {
+        // this.api === google.maps
+      });
+    </script>
+
+
+@element rb-time-zone
+@status alpha
+@homepage github.io
+-->
+<link rel="import" href="../core-ajax/core-ajax.html">
+<polymer-element name="rb-time-zone" attributes="auto latitude longitude timestamp apiKey language output clientId signature" hidden>
+<template>
+
+  <core-ajax
+      id="coreAjax"
+      on-core-response="{{ onResponse }}"
+      on-core-error="{{ onError }}"
+      on-core-complete="{{ onComplete }}">
+  </core-ajax>
+
+</template>
+<script>
+
+  Polymer('rb-time-zone', {
+
+    /**
+     * A latitude to a location.
+     *
+     * @attribute latitude
+     * @type number
+     * @default null
+     */
+    latitude: null,
+
+    /**
+     * A longitude to a location.
+     *
+     * @attribute longitude
+     * @type number
+     * @default null
+     */
+    longitude: null,
+
+    /**
+     * The desired time as seconds since midnight, January 1, 1970 UTC.
+     *
+     * @attribute longitude
+     * @type number
+     * @default null
+     */
+    timestamp: null,
+
+    /**
+     * If true, automatically performs the request on another parameter change.
+     *
+     * @attribute auto
+     * @type boolean
+     * @default false
+     */
+    auto: false,
+
+
+    /**
+     * Specifies the output format. Possible values are 'json' and 'xml'.
+     *
+     * @attribute output
+     * @type string
+     * @default json
+     */
+    output: 'json',
+
+    /**
+     * A Maps API key. To obtain an API key, see developers.google.com/maps/documentation/javascript/tutorial#api_key.
+     *
+     * @property apiKey
+     * @type string
+     */
+    apiKey: null,
+
+    /**
+     * The language in which to return results.
+     *
+     * @attribute language
+     * @type string
+     * @default null
+     */
+    language: null,
+
+    /**
+     * The clientId of Maps API for Business users.
+     *
+     * @attribute clientId
+     * @type string
+     * @default null
+     */
+    clientId: null,
+
+    /**
+     * The signature of Maps API for Business users.
+     *
+     * @attribute signature
+     * @type string
+     * @default null
+     */
+    signature: null,
+
+
+    /**
+     * The base url of the service request.
+     *
+     * @attribute baseUrl
+     * @type string
+     */
+    baseUrl: 'https://maps.googleapis.com/maps/api/timezone',
+
+    observe: {
+      latitude: 'updateParams',
+      longitude: 'updateParams',
+      timestamp: 'updateParams',
+      apiKey: 'updateParams',
+      language: 'updateParams',
+      clientId: 'updateParams',
+      signature: 'updateParams',
+      output: 'updateUrl'
+    },
+
+    autoChanged: function() {
+      this.$.coreAjax.auto = this.auto;
+    },
+
+    ready: function() {
+      this.$.coreAjax.auto = this.auto;
+      this.updateUrl();
+    },
+
+    updateParams: function() {
+      var elem = this;
+      var params = {
+        location: elem.latitude + ',' + elem.longitude,
+        timestamp: elem.timestamp,
+        key: elem.apiKey,
+        language: elem.language,
+        client: elem.clientId,
+        signature: elem.signature
+      };
+      for (var key in params) {
+        if (params.hasOwnProperty(key) && !params[key]) {
+          delete params[key];
+        }
+      }
+      if (params['client']) {
+        params['client'] = 'gme-' + params['client'];
+      }
+      this.$.coreAjax.params = JSON.stringify(params);
+    },
+
+    updateUrl: function() {
+      this.$.coreAjax.handleAs = this.output;
+      this.$.coreAjax.url = this.baseUrl + '/' + this.output
+    },
+
+    go: function() {
+      this.$.coreAjax.go();
+    },
+
+    /**
+     * Fired when a response is received.
+     *
+     * @event rb-time-zone-response
+     */
+    onResponse: function(e) {
+      this.fire('rb-time-zone-response', e.detail);
+    },
+
+    /**
+     * Fired when an error is received.
+     *
+     * @event rb-time-zone-error
+     */
+    onError: function(e) {
+      this.fire('rb-time-zone-error', e.detail);
+    },
+
+    /**
+     * Fired whenever a response or an error is received.
+     *
+     * @event rb-time-zone-complete
+     */
+    onComplete: function(e) {
+      this.fire('rb-time-zone-complete', e.detail);
+    }
+  });
+
+</script>
+</polymer-element>

@@ -1,0 +1,30 @@
+{
+  "name": "rb-time-zone",
+  "version": "0.0.1",
+  "private": false,
+  "homepage": "http://rbwebcomponents.github.io/rb-time-zone",
+  "description": "A time zone web component service.",
+  "main": "rb-time-zone.html",
+  "authors": [
+    "Rafael Brandão <rafa.bra@gmail.com>"
+  ],
+  "license": "Apache2",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "../"
+  ],
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "timezone",
+    "time-zone"
+  ],
+  "dependencies": {
+    "core-ajax": "Polymer/core-ajax#master"
+  }
+}
