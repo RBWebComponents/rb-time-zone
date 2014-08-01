@@ -23,20 +23,20 @@ License along with this library.
 </head>
 <body>
   <rb-time-zone
-      auto
       latitude="-22.9"
       longitude="-43.2"
       timestamp="1387929600">
   </rb-time-zone>
 
   <template if="{{ show }}">
+    <h2>Google Timezone API Response</h2>
     <pre>{{ response }}</pre>
   </template>
 
   <script>
     document.addEventListener('polymer-ready', function() {
-      var timezoneRequest = document.querySelector('rb-time-zone');
-      timezoneRequest.addEventListener('rb-time-zone-response',
+      var timezoneApi = document.querySelector('rb-time-zone');
+      timezoneApi.addEventListener('rb-time-zone-response',
           function(e) {
             document.querySelector('template').model = {
               show: true,
@@ -44,16 +44,17 @@ License along with this library.
             };
           }
       );
-      timezoneRequest.addEventListener('rb-time-zone-error',
+      timezoneApi.addEventListener('rb-time-zone-error',
           function(e) {
             console.error(e.detail.response);
           }
       );
-      timezoneRequest.addEventListener('rb-time-zone-complete',
+      timezoneApi.addEventListener('rb-time-zone-complete',
           function(e) {
             console.log('http_status: ' + e.detail.xhr.status);
           }
       );
+      timezoneApi.go();
     });
   </script>
 
